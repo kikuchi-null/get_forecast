@@ -22,17 +22,12 @@ class GetForecast:
         レスポンスをもとにLINEのメッセージを作成する
         """
         data = self.access_to_openweathermap()
-        weather = json.loads(data)
-        print("line26:", weather)
-
-        weather = weather["daily"][0]
-        print("line29:", weather)
+        weather = json.loads(data)["daily"][0]
 
         warning_message = ""
         if int(weather["weather"][0]["id"]) != 800: # 800は"はれ"の意味
             warning_message = "\nAttention! BAD WEATHER!\n"
         
-
         detail_message = f"""
         City: {self.CITY}
 
@@ -50,9 +45,7 @@ class GetForecast:
         Min Temperature: {weather["temp"]["min"]} ℃
         """.replace("        ", "")
 
-        message = warning_message + detail_message
-
-        return message
+        return warning_message + detail_message
 
     def send_messege(self, token, line_url):
         self.token, self.line_url = token, line_url
