@@ -67,7 +67,7 @@ if __name__ == "__main__":
     lon = "XXXX"
     CITY = "XXXX"
     KEY = "XXXX"
-    FORECAST_URL = f'https://api.openweathermap.org/data/2.5/onecall?lat={lat}&lon={lon}&units=metric&appid={KEY}'
+    FORECAST_URL = f"https://api.openweathermap.org/data/2.5/onecall?lat={lat}&lon={lon}&units=metric&appid={KEY}"
 
     TOKEN = "XXXX"
     LINE_URL = "XXXX"
