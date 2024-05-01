@@ -23,27 +23,28 @@ class GetForecast:
         """
         data = self.access_to_openweathermap()
         weather = json.loads(data)["daily"][0]
+        print(weather)
 
         warning_message = ""
         if int(weather["weather"][0]["id"]) != 800: # 800は"はれ"の意味
-            warning_message = "\nAttention! BAD WEATHER!\n"
+            warning_message = "\n注意! 悪天候!\n"
         
         detail_message = f"""
-        City: {self.CITY}
+        場所: {self.CITY}
+        天気: {weather["weather"][0]["description"].title()}
+        湿度: {weather["humidity"]} %
 
-        Weather: {weather["weather"][0]["description"].title()}
+        【気温】 
+        朝: {weather["temp"]["morn"]} ℃
+        昼: {weather["temp"]["day"]} ℃
+        夕: {weather["temp"]["eve"]} ℃
+        晩: {weather["temp"]["night"]} ℃
 
-        Humidity: {weather["humidity"]} %
-
-        Temperature 
-        Morning: {weather["temp"]["morn"]} ℃
-        Day: {weather["temp"]["day"]} ℃
-        Evening: {weather["temp"]["eve"]} ℃
-        Night: {weather["temp"]["night"]} ℃
-
-        Max Temperature: {weather["temp"]["max"]} ℃
-        Min Temperature: {weather["temp"]["min"]} ℃
+        最高: {weather["temp"]["max"]} ℃
+        最低: {weather["temp"]["min"]} ℃
         """.replace("        ", "")
+
+        print(warning_message + detail_message)
 
         return warning_message + detail_message
 
