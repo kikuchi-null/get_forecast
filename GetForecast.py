@@ -16,16 +16,24 @@ class GetForecast:
 
         return forecast
 
-    def write_messege(self):
+    def create_message(self):
         """
         apiからjson形式でレスポンスを受け取る。
         レスポンスをもとにLINEのメッセージを作成する
         """
         data = self.access_to_openweathermap()
         weather = json.loads(data)
+        print("line26:", weather)
 
         weather = weather["daily"][0]
-        message = f"""
+        print("line29:", weather)
+
+        warning_message = ""
+        if int(weather["weather"][0]["id"]) != 800: # 800は"はれ"の意味
+            warning_message = "\nAttention! BAD WEATHER!\n"
+        
+
+        detail_message = f"""
         City: {self.CITY}
 
         Weather: {weather["weather"][0]["description"].title()}
@@ -40,19 +48,18 @@ class GetForecast:
 
         Max Temperature: {weather["temp"]["max"]} ℃
         Min Temperature: {weather["temp"]["min"]} ℃
-        """
+        """.replace("        ", "")
 
-        if int(weather["weather"][0]["id"]) != 800: # 800は"はれ"の意味
-            message += "\nAttention! BAD WEATHER!"
+        message = warning_message + detail_message
 
-        return message.replace("        ", "")
+        return message
 
     def send_messege(self, token, line_url):
         self.token, self.line_url = token, line_url
         headers = {"Authorization": f"Bearer {self.token}"}
 
         try:
-            message = self.write_messege()
+            message = self.create_message()
             payload = {"message": message}
         except:
             payload = {"messege": "ERROR has occured!"}
@@ -63,14 +70,14 @@ class GetForecast:
 if __name__ == "__main__":
 
     # ACCESS
-    lat = XXXX
-    lon = XXXX
-    CITY = XXXX
-    KEY = XXXX
+    lat = "XXXX"
+    lon = "XXXX"
+    CITY = "XXXX"
+    KEY = "XXXX"
     FORECAST_URL = f'https://api.openweathermap.org/data/2.5/onecall?lat={lat}&lon={lon}&units=metric&appid={KEY}'
 
-    TOKEN = XXXX
-    LINE_URL = XXXX
+    TOKEN = "XXXX"
+    LINE_URL = "XXXX"
 
     weather_forecast = GetForecast(CITY, FORECAST_URL)
     weather_forecast.send_messege(TOKEN, LINE_URL)
