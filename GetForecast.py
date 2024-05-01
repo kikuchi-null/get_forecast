@@ -1,78 +1,109 @@
+import urllib.parse
 import requests
-import json
+import urllib
 
 
-class GetForecast:
+class HTTPCallout:
 
-    def __init__(self, city, forecast_url):
-        self.CITY, self.URL = city, forecast_url
+    def __init__(self, endpoint) -> None:
+        self.endpoint = endpoint # リクエスト先
+        self.params = {} # URLパラメーター
+        self.headers = {} # リクエストヘッダー
+        self.bodies = {} # リクエストボディ
+        self.timeout = (3.0, 5.0) # デフォルトのタイムアウト
 
-    def access_to_openweathermap(self):
+    def set_param(self, param, value) -> None:
         """
-        openwathermap apiへのアクセスをおこなう
+        URLのパラメータ設定
         """
-        response = requests.get(self.URL)
-        forecast = response.text
+        pr = urllib.parse.urlparse(self.endpoint)
+        d = urllib.parse.parse_qs(pr.query)
+        d[param] = value
+        self.endpoint = urllib.parse.urlunparse(pr._replace(query=urllib.parse.urlencode(d, doseq=True)))
 
-        return forecast
-
-    def create_message(self):
+    def set_header(self, key, value):
         """
-        apiからjson形式でレスポンスを受け取る。
-        レスポンスをもとにLINEのメッセージを作成する
+        リクエストヘッダーの設定
         """
-        data = self.access_to_openweathermap()
-        weather = json.loads(data)["daily"][0]
-        print(weather)
+        self.headers[key] = value
+    
+    def set_body(self, key, value):
+        """
+        リクエストボディの設定
+        """
+        self.bodies[key] = value
 
-        warning_message = ""
-        if int(weather["weather"][0]["id"]) != 800: # 800は"はれ"の意味
-            warning_message = "\n注意! 悪天候!\n"
+    def get(self):
+        """
+        HTTP Request GET
+        """
+        try:
+            res = requests.get(self.endpoint, timeout=self.timeout)
+        except Exception as e:
+            print(f"Error: {e}")
+
+        return res.status_code, res.json()
+    
+    def post(self):
+        """
+        HTTP Request POST
+        """
+        try:
+            res = requests.post(url=self.endpoint, headers=self.headers, data=self.bodies, timeout=self.timeout)
+        except Exception as e:
+            print(f"Error: {e}")
         
-        detail_message = f"""
-        場所: {self.CITY}
-        天気: {weather["weather"][0]["description"].title()}
-        湿度: {weather["humidity"]} %
+        return res.status_code
+
+class MessageUtil:
+
+    def __init__(self, data) -> None:
+        self.message = "" # 生成するメッセージ
+        self.additional_message = "" # 追加データを用いて生成するメッセージ
+        self.data = data # メッセージを生成するもととなるデータ
+
+    def get_message(self):
+        """
+        送信するメッセージを生成して返す
+        """
+        self._add_warning()
+
+        if len(self.additional_message) > 0:
+            self.message += self.additional_message
+
+        self._add_body()
+
+        return self.message
+    
+    def _add_warning(self):
+        """
+        警告メッセージの生成
+        """
+        if int(self.data["weather"][0]["id"]) != 800: 
+            # 800(晴れ)以外のときは警告文を生成する
+            self.message += "\n注意! 悪天候!\n"
+
+    def add_message(self, key, value):
+        """
+        追加メッセージの生成
+        """
+        # 引数のデータを参照してメッセージを追加する
+        self.additional_message += f"\n{key}: {value}"
+
+    def _add_body(self):
+        """
+        本文の生成
+        """
+        # 天気予報のデータをもとに本文を生成する
+        self.message += f"""
+        天気: {self.data["weather"][0]["description"]}
+        湿度: {self.data["humidity"]} %
 
         【気温】 
-        朝: {weather["temp"]["morn"]} ℃
-        昼: {weather["temp"]["day"]} ℃
-        夕: {weather["temp"]["eve"]} ℃
-        晩: {weather["temp"]["night"]} ℃
+        朝: {self.data["temp"]["morn"]} ℃
+        昼: {self.data["temp"]["day"]} ℃
+        夕: {self.data["temp"]["eve"]} ℃
+        晩: {self.data["temp"]["night"]} ℃
 
-        最高: {weather["temp"]["max"]} ℃
-        最低: {weather["temp"]["min"]} ℃
-        """.replace("        ", "")
-
-        print(warning_message + detail_message)
-
-        return warning_message + detail_message
-
-    def send_messege(self, token, line_url):
-        self.token, self.line_url = token, line_url
-        headers = {"Authorization": f"Bearer {self.token}"}
-
-        try:
-            message = self.create_message()
-            payload = {"message": message}
-        except:
-            payload = {"messege": "ERROR has occured!"}
-            
-        r = requests.post(self.line_url, headers=headers, data=payload)
-        return r.status_code
-
-if __name__ == "__main__":
-
-    # ACCESS
-    lat = "XXXX"
-    lon = "XXXX"
-    CITY = "XXXX"
-    KEY = "XXXX"
-    FORECAST_URL = f"https://api.openweathermap.org/data/2.5/onecall?lat={lat}&lon={lon}&units=metric&appid={KEY}"
-
-    TOKEN = "XXXX"
-    LINE_URL = "XXXX"
-
-    weather_forecast = GetForecast(CITY, FORECAST_URL)
-    weather_forecast.send_messege(TOKEN, LINE_URL)
-    
+        最高: {self.data["temp"]["max"]} ℃
+        最低: {self.data["temp"]["min"]} ℃""".replace("        ", "")
