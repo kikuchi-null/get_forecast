@@ -1,7 +1,5 @@
-import urllib.parse
 import requests
 import urllib
-
 
 class HTTPCallout:
 
@@ -12,13 +10,13 @@ class HTTPCallout:
         self.bodies = {} # リクエストボディ
         self.timeout = (3.0, 5.0) # デフォルトのタイムアウト
 
-    def set_param(self, param, value) -> None:
+    def set_param(self, key, value) -> None:
         """
         URLのパラメータ設定
         """
         pr = urllib.parse.urlparse(self.endpoint)
         d = urllib.parse.parse_qs(pr.query)
-        d[param] = value
+        d[key] = value
         self.endpoint = urllib.parse.urlunparse(pr._replace(query=urllib.parse.urlencode(d, doseq=True)))
 
     def set_header(self, key, value):
@@ -38,7 +36,7 @@ class HTTPCallout:
         HTTP Request GET
         """
         try:
-            res = requests.get(self.endpoint, timeout=self.timeout)
+            res = requests.get(url=self.endpoint, timeout=self.timeout)
         except Exception as e:
             print(f"Error: {e}")
 
