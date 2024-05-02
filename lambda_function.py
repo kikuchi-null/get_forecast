@@ -51,17 +51,24 @@ def lambda_handler(event, context):
     """
     LINE送信
     """
-    ms = MessageUtil(weather_data)
+    mu = MessageUtil(weather_data)
     line = HTTPCallout(LINE)
 
     # メッセージ作成
-    ms.add_message("場所", city_town)
-    message = ms.get_message()
+    mu.add_message("場所", city_town)
+    message = mu.get_message()
 
-    # コールアウト
+    # リクエストヘッダー・ボディ設定
     line.set_header("Authorization", f"Bearer {LINE_TOKEN}")
     line.set_body("message", message)
-    line.post()
+    print("Endpoint:", line.endpoint)
+    print("Header:", line.headers)
+    print("Body:", line.bodies)
+
+    # コールアウト
+    status_code = line.post()
+    print("Status Code:", status_code)
+
 
     return {
         'statusCode': 200,
