@@ -12,20 +12,21 @@ def lambda_handler(event, context):
     """
     現在地の取得
     """
-    postcode = HTTPCallout(HEART_RAILS_GEO)
+    location = HTTPCallout(HEART_RAILS_GEO)
     
     # パラメータ設定
-    postcode.set_param("method", "searchByPostal")
-    postcode.set_param("postal", POSTCODE)
-    print("Endpoint", postcode.endpoint)
+    params  = {
+        "method": "searchByPostal",
+        "postal": POSTCODE,
+    }
+    location.set_params(params)
+    print("Endpoint", location.endpoint)
 
     # コールアウト
-    status_code, location_data = postcode.get()
+    status_code, location_data = location.get()
     print("Status Code:", status_code)
 
     # レスポンスの処理
-    latitude = location_data["response"]["location"][0]["y"] # 緯度
-    longtitude = location_data["response"]["location"][0]["x"] # 経度
     city_town = location_data["response"]["location"][0]["city"] + location_data["response"]["location"][0]["town"] # 市区町村
 
     """
@@ -34,11 +35,14 @@ def lambda_handler(event, context):
     forecast = HTTPCallout(OPEN_WEATHER_MAP)
 
     # パラメーター設定
-    forecast.set_param("lat", latitude)
-    forecast.set_param("lon", longtitude)
-    forecast.set_param("appid", OPEN_WEATHER_MAP_KEY)
-    forecast.set_param("units", "metric")
-    forecast.set_param("lang", "ja")
+    params = {
+        "lat": location_data["response"]["location"][0]["y"], # 緯度
+        "lon": location_data["response"]["location"][0]["x"], # 経度
+        "appid": OPEN_WEATHER_MAP_KEY,
+        "units": "metric",
+        "lang": "ja",
+    }
+    forecast.set_params(params)
     print("Endpoint:", forecast.endpoint)
 
     # コールアウト

@@ -10,13 +10,27 @@ class HTTPCallout:
         self.bodies = {} # リクエストボディ
         self.timeout = (3.0, 5.0) # デフォルトのタイムアウト
 
+    def _url_parameter_parser(self):
+        """
+        URLとパラメーターの辞書を返す
+        """
+        pr = urllib.parse.urlparse(self.endpoint)
+        return pr, urllib.parse.parse_qs(pr.query)
+
     def set_param(self, key, value) -> None:
         """
         URLのパラメータ設定
         """
-        pr = urllib.parse.urlparse(self.endpoint)
-        d = urllib.parse.parse_qs(pr.query)
+        pr, d = self._url_parameter_parser()
         d[key] = value
+        self.endpoint = urllib.parse.urlunparse(pr._replace(query=urllib.parse.urlencode(d, doseq=True)))
+    
+    def set_params(self, params) -> None:
+        """
+        URLのパラメータ設定
+        """
+        pr, d = self._url_parameter_parser()
+        d = dict(**d, **params)
         self.endpoint = urllib.parse.urlunparse(pr._replace(query=urllib.parse.urlencode(d, doseq=True)))
 
     def set_header(self, key, value):
