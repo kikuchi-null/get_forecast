@@ -1,7 +1,7 @@
 # エンドポイント、郵便番号、APIキーは別ファイルで管理する
 # 上記の情報はgitのバージョン管理の対象外
 import json
-from GetForecast import HTTPCallout, MessageUtil
+from lambda_function_handler import HTTPCallout, MessageUtil
 from constants import HEART_RAILS_GEO, POSTCODE, OPEN_WEATHER_MAP, OPEN_WEATHER_MAP_KEY, LINE, LINE_TOKEN 
 
 def lambda_handler(event, context):
