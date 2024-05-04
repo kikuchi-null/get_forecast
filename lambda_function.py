@@ -5,6 +5,9 @@ from lambda_function_handler import HTTPCallout, MessageUtil
 from constants import HEART_RAILS_GEO, POSTCODE, OPEN_WEATHER_MAP, OPEN_WEATHER_MAP_KEY, LINE, LINE_TOKEN 
 
 def lambda_handler(event, context):
+    """
+    AWS lambdaから呼び出す関数
+    """
 
     """
     現在地の取得
